@@ -5,39 +5,42 @@ const { GenericException } = require("../generic-exception.js");
 
 const users = [
   {
-    id: uuidv4(),
-    email: "teste@teste.com",
-    password: "123456",
+    user_id: uuidv4(),
+    user_email: "teste@teste.com",
+    user_password: "123456",
   },
   {
-    id: uuidv4(),
-    email: "teste@2teste.com",
-    password: "123456",
+    user_id: uuidv4(),
+    user_email: "teste@2teste.com",
+    user_password: "123456",
   },
 ];
 
 class UserService {
+  login( user_email, user_password){
+    const usuario = users.find((user) => user.user_email === user_email);
+    if(usuario <= -1 ) return false;
+    return usuario.user_password === user_password;
+  }
+
   findAll() {
-    return users.map((user) => new UserDTO(user));
+    return users.map((user) => new User(user));
   }
 
   findOne(id) {
     return users.find((user) => user.id === id);
   }
   
-  create(id, email, password) {
-    id = uuidv4();
-    const newUser = new User(id, email, password);
-    users.push(newUser);
-    return newUser;
+  create(UserDTO) {
+    users.push(UserDTO);
+    return UserDTO;
   }
 
-  update(id, email, password) {
-    const userIndex = users.findIndex((user) => user.id === id);
+  update(UserDTO) {
+    const userIndex = users.findIndex((user) => user.id === UserDTO.id);
     if (userIndex === -1) return null;
-    const updatedUser = { id, email, password };
-    users[userIndex] = updatedUser;
-    return updatedUser;
+    users[userIndex] = UserDTO;
+    return UserDTO;
   }
 
   remove(id) {

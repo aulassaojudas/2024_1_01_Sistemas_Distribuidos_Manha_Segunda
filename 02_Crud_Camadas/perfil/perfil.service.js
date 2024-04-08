@@ -1,61 +1,72 @@
-const { v4: uudiv4 } = require("uuid");
-const Perfil = require("./perfil.entity");
-const PerfilDTO = require("./perfil.dto");
+const { v4: uuidv4 } = require("uuid");
+const Perfil = require("./perfil.entity.js");
+const PerfilDTO = require("./perfil.dto.js");
 
-const perfils = [
+const perfis = [
   {
     user_id: "1",
-    address_id: "1",
-    profile_endereco: "rua sem nome",
-    profile_cidade: "sao paulo",
+    profile_address_id: "1",
+    profile_endereco: "endereco um",
+    profile_cidade: "são paulo",
     country_id: "br",
   },
   {
     user_id: "1",
-    address_id: "2",
-    profile_endereco: "rua manoel da silva",
-    profile_cidade: "rio de janeiro",
+    profile_address_id: "2",
+    profile_endereco: "endereco um",
+    profile_cidade: "são paulo",
     country_id: "br",
   },
   {
     user_id: "2",
-    address_id: "1",
-    profile_endereco: "rua leonel da silva ",
-    profile_cidade: "belo horizonto",
+    profile_address_id: "3",
+    profile_endereco: "endereco dois",
+    profile_cidade: "minas gerais",
     country_id: "br",
   },
 ];
 
-class PerfilService {
+class PerfilServise {
   findAll() {
-    return perfils.map((perfil) => new PerfilDTO(perfil));
+    return perfis.map((perfil) => new PerfilDTO(perfil));
   }
 
-  findAllEnd(user_id) {
-    return perfils.filter((perfil) => {
-      console.log("user id " + user_id + " perfil.user_id " + perfil.user_id);
-      return perfil.user_id === user_id;
-    });
+  findOne(user_id) {
+    return perfis.filter((perfil) => perfil.user_id === user_id);
   }
 
-  findOneEnd(user_id, address_id) {
-    return perfils.filter(
-      (perfil) => perfil.user_id === user_id && perfil.address_id === address_id
+  findEndOne(user_id, address_id) {
+    return perfis.find(
+      (perfil) =>
+        perfil.user_id === user_id && perfil.profile_address_id === address_id
     );
   }
 
-  create(user_id, address_id, profile_endereco, profile_cidade, country_id) {
-    address_id = uudiv4();
-    const newPerfil = new Perfil(
-      user_id,
-      address_id,
-      profile_endereco,
-      profile_cidade,
-      country_id
+  create(PerfilDTO) {
+    PerfilDTO.profile_address_id = uuidv4();
+    perfis.push(PerfilDTO);
+    return PerfilDTO;
+  }
+
+  update(PerfilDTO) {
+    const userIndex = perfis.findIndex(
+      (perfil) =>
+        perfil.user_id === PerfilDTO.user_id &&
+        perfil.address_id == PerfilDTO.address_id
     );
-    perfils.push(newPerfil);
-    return newPerfil; 
+    if (userIndex === -1) return null;
+    perfis[userIndex] = PerfilDTO;
+    return PerfilDTO;
+  }
+
+  remove(user_id, address_id) {
+    const userIndex = perfis.findIndex(
+      (perfil) => perfil.user_id === user_id && perfil.address_id == address_id
+    );
+    if (userIndex === -1) return false;
+    perfis.splice(userIndex, 1);
+    return true;
   }
 }
 
-module.exports = PerfilService;
+module.exports = PerfilServise;
