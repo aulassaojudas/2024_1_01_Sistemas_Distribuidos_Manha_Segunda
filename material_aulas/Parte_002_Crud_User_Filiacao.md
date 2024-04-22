@@ -49,56 +49,6 @@ Descrições dos métodos necessários:
 
 
 ```typescript 
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../entity/user.entity';
-
-@Injectable()
-export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) {}
-
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find({ relations: ['filiacoes'] });
-  }
-
-  async findOne(id: number): Promise<User> {
-    return await this.userRepository.findOne({
-      where: { id_user: id },
-      relations: ['filiacoes'],
-    });
-  }
-
-  async create(user: User): Promise<User> {
-    return await this.userRepository.save(user);
-  }
-
-  async update(id: number, user: Partial<User>): Promise<User> {
-    await this.userRepository.update(id, user);
-    return this.findOne(id);
-  }
-
-  async delete(id: number): Promise<void> {
-    await this.userRepository.delete(id);
-  }
-}
-```
-Execute o comando `nest g controller user/controller/user --flat` que gera um arquivo denominado `user.controller.ts`
-
-Descrições dos métodos necessários:
-
-**`@Controller('user')`**: Define a rota base para todos os endpoints relacionados aos usuários.
-**`@Get()`**: Decorador que mapeia requisições GET para o método `findAll()`, que retorna todos os usuários cadastrados.
-**`@Get(':id')`**: Mapeia requisições GET, o `:id` é um parâmetro de rota passado para o método `findOne(id)`.
-**`@Post()`**: Mapeia requisições POST para o método `create()`, que é usado para criar um novo usuário. O decorador `@Body()` extrai o corpo da requisição HTTP e o passa como um objeto `User`.
-**`@Put(':id')`**: Mapeia requisições PUT para atualizar um usuário existente. O `@Param('id')` captura o ID do usuário a ser atualizado, enquanto `@Body()` fornece os dados para atualização.
-**`@Delete(':id')`**: Mapeia requisições DELETE para excluir um usuário especificado pelo ID.
-Este é o código completo para o controller
-
-```typescript
 
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -160,6 +110,67 @@ export class UserService {
     }
   }
 }
+
+```
+Execute o comando `nest g controller user/controller/user --flat` que gera um arquivo denominado `user.controller.ts`
+
+Descrições dos métodos necessários:
+
+**`@Controller('user')`**: Define a rota base para todos os endpoints relacionados aos usuários.
+**`@Get()`**: Decorador que mapeia requisições GET para o método `findAll()`, que retorna todos os usuários cadastrados.
+**`@Get(':id')`**: Mapeia requisições GET, o `:id` é um parâmetro de rota passado para o método `findOne(id)`.
+**`@Post()`**: Mapeia requisições POST para o método `create()`, que é usado para criar um novo usuário. O decorador `@Body()` extrai o corpo da requisição HTTP e o passa como um objeto `User`.
+**`@Put(':id')`**: Mapeia requisições PUT para atualizar um usuário existente. O `@Param('id')` captura o ID do usuário a ser atualizado, enquanto `@Body()` fornece os dados para atualização.
+**`@Delete(':id')`**: Mapeia requisições DELETE para excluir um usuário especificado pelo ID.
+Este é o código completo para o controller
+
+```typescript
+
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { CreateUserDto, UpdateUserDto } from '../dto/user.dto';
+import { UserService } from '../service/user.service';
+
+@Controller('user')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get()
+  async findAll(): Promise<any[]> {
+    return this.userService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<any> {
+    return this.userService.findOne(id);
+  }
+
+  @Post()
+  async create(@Body() createUserDto: CreateUserDto): Promise<any> {
+    return this.userService.create(createUserDto);
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<any> {
+    return this.userService.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number): Promise<void> {
+    return this.userService.delete(id);
+  }
+}
+
 
 ```
 ---
