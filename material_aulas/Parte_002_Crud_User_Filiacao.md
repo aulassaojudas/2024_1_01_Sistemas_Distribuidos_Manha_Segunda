@@ -265,3 +265,71 @@ O Thunder Client é uma extensão do Visual Studio Code usada para testar APIs R
 #### DELETE /user/:id
    - Insira a URL `http://localhost:3000/user/1`.
    - Clique em "Send" para deletar o usuário.
+---
+
+# Implementando criptografia na senha
+
+Em aplicações web, a segurança dos dados do usuário é crucial, em particular quando se trata de informações sensíveis como senhas. Uma prática comum e essencial é a criptografia de senhas antes de armazená-las em um banco de dados. Isso ajuda a proteger as informações do usuário contra vazamentos de dados e ataques de hackers.
+
+
+### Implementação Atual do Método Create
+
+Suponha que temos um método `create` básico em nosso serviço `UserService` que simplesmente salva um novo usuário no banco de dados sem criptografar a senha. O método esta assim: 
+
+```typescript
+async create(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      return await this.userRepository.save(
+        this.userRepository.create(createUserDto),
+      );
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new HttpException('Email já registrado.', HttpStatus.BAD_REQUEST);
+      } else {
+        throw new HttpException(
+          'Erro ao criar o registro. Tente novamente mais tarde.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+```
+
+### Refatorando para Incluir Criptografia de Senha
+
+Na configuração de aplicação foi instalado a biblioteca `bcryptjs`, que vamos utilizar agora. Importe a biblioteca no topo do código como dado abaixo.
+
+```typescript
+import * as bcrypt from 'bcryptjs';
+```
+Agora vamos refatorar o método create, inserindo as linhas: 
+
+```typescript
+const saltOrRounds = 10; // o custo do processamento, 10 é geralmente suficiente
+const hash = await bcrypt.hash(createUserDto.senha, saltOrRounds);
+createUserDto.senha = hash; // substitui a senha original pelo hash
+```
+O código ficará então desta forma. 
+
+```typescript
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const saltOrRounds = 10; // o custo do processamento, 10 é geralmente suficiente
+      const hash = await bcrypt.hash(createUserDto.senha, saltOrRounds);
+      createUserDto.senha = hash; // substitui a senha original pelo hash
+
+      return await this.userRepository.save(
+        this.userRepository.create(createUserDto),
+      );
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new HttpException('Email já registrado.', HttpStatus.BAD_REQUEST);
+      } else {
+        throw new HttpException(
+          'Erro ao criar o registro. Tente novamente mais tarde.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+```
